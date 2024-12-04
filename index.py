@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # Importar o CORS
-import json
 import re
+import mysql.connector  # Para conectar ao MySQL
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -9,12 +9,32 @@ from sklearn.metrics.pairwise import cosine_similarity
 # Baixar dados necessários para o NLTK (somente na primeira vez)
 nltk.download('punkt')
 
-# Carregar perguntas e respostas
-with open('faqs.json', 'r', encoding='utf-8') as f:
-    faqs = json.load(f)
+# Configuração do banco de dados
+db_config = {
+    "user": "elixirsql",
+    "password": "elixirnatural",
+    "host": "elixirbd.c322c4yyu9oc.us-east-1.rds.amazonaws.com",
+    "database": "elixir",
+}
 
-perguntas = [faq['pergunta'] for faq in faqs]
-respostas = [faq['resposta'] for faq in faqs]
+# Função para conectar ao banco de dados e obter perguntas e respostas
+def get_perguntas_respostas():
+    connection = mysql.connector.connect(**db_config)
+    cursor = connection.cursor(dictionary=True)
+    
+    cursor.execute("SELECT pergunta, resposta FROM perguntas_respostas")
+    resultados = cursor.fetchall()
+    
+    perguntas = [resultado['pergunta'] for resultado in resultados]
+    respostas = [resultado['resposta'] for resultado in resultados]
+    
+    cursor.close()
+    connection.close()
+    
+    return perguntas, respostas
+
+# Buscar perguntas e respostas diretamente do banco de dados
+perguntas, respostas = get_perguntas_respostas()
 
 # Função para pré-processar texto
 def preprocess(text):
@@ -58,4 +78,5 @@ def chatbot():
     return jsonify({'resposta': resposta})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Rodar o Flask na porta 5000 e tornar o servidor acessível de fora do contêiner
+    app.run(debug=True, host='0.0.0.0', port=5000)
