@@ -5,16 +5,21 @@ import mysql.connector  # Para conectar ao MySQL
 import nltk
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+import os
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente do arquivo .env
+load_dotenv()
 
 # Baixar dados necessários para o NLTK (somente na primeira vez)
 nltk.download('punkt')
 
-# Configuração do banco de dados
+# Configuração do banco de dados usando variáveis de ambiente
 db_config = {
-    "user": "elixirsql",
-    "password": "elixirnatural",
-    "host": "elixirbd.c322c4yyu9oc.us-east-1.rds.amazonaws.com",
-    "database": "elixir",
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASSWORD"),
+    "host": os.getenv("DB_HOST"),
+    "database": os.getenv("DB_NAME"),
 }
 
 # Função para conectar ao banco de dados e obter perguntas e respostas
@@ -59,7 +64,7 @@ def buscar_resposta(pergunta_usuario):
     similaridade_maxima = similaridades.max()
 
     # Se a similaridade for abaixo de um limite (por exemplo, 0.2), retorna uma mensagem de não entendimento
-    if similaridade_maxima < 0.2:  # Limite de similaridade ajustável
+    if (similaridade_maxima < 0.2):  # Limite de similaridade ajustável
         return "Desculpe, não entendi a sua pergunta. Pode reformular?"
 
     # Caso contrário, retorna a resposta correspondente à pergunta mais similar
