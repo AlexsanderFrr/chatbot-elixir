@@ -1,5 +1,7 @@
 # Use a imagem base do Python 3.9
 FROM python:3.9-slim
+RUN pip install --upgrade pip
+
 
 # Defina o diretório de trabalho
 WORKDIR /app
